@@ -1,0 +1,54 @@
+<swiper class="swiper" vertical='true' easing-function='default' bindchange='pageChange'>
+  <block wx:for="{{talkList}}" wx:for-item="key" wx:key="*this">
+    <swiper-item>
+      <view class="wrap">
+        <!-- 标题 -->
+        <view animation="{{animation}}" class="titleCon">
+          <image class="title" src="https://7869-xianyuinfo-byqz9-1301827009.tcb.qcloud.la/title.png"></image>
+        </view>
+        <!-- VS区域 -->
+        <view class="vsCon">
+          <view class="zheng">100 </view>
+          <text class="vs">VS</text>
+          <view class="fan">200</view>
+        </view>
+        <!-- VS区域 -->
+        <van-row custom-class="talk">
+          <van-col offset="2" span="10">
+            <van-image src="cloud://xianyuinfo-byqz9.7869-xianyuinfo-byqz9-1301827009/坐着网购的男人.png"
+              custom-class="zhengfang" />
+          </van-col>
+          <van-col span="10">
+            <van-image src="cloud://xianyuinfo-byqz9.7869-xianyuinfo-byqz9-1301827009/坐着网购的男人_1.png"
+              custom-class="fanfang" />
+          </van-col>
+        </van-row>
+      </view>
+    </swiper-item>
+  </block>
+</swiper>
+
+
+<view class="top"></view>
+<view class="bottom">
+  <image
+    src="https://7869-xianyuinfo-byqz9-1301827009.tcb.qcloud.la/icon-%E6%B3%A8%E5%86%8C%E5%A4%B4%E5%83%8F%20(1).png?sign=dcec01b0d29e6242bf7c5b2e4695e635&t=1609569274"
+    class="user" />
+
+  <image
+    src="https://7869-xianyuinfo-byqz9-1301827009.tcb.qcloud.la/record.png?sign=b63badd32bc268f5d2ff53de70070b43&t=1609569436"
+    class="record" bindtap="showRecord" />
+</view>
+
+<van-popup show="{{ recordShow }}" bind:close="hideRecord" custom-class="popup">
+  <view class="record-popup">
+    <text>标题</text>
+    <text>正方还是反方</text>
+    <text>录音规则：3分钟限制，禁止辱骂人身攻击</text>
+    <text>辩论姿态选择</text>
+    <button bindtap="startRecord">开始录音</button>
+    <button bindtap="stopRecord">停止录音</button>
+    <button bindtap="stopRecord">上传录音</button>
+  </view>
+
+</van-popup>

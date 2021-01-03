@@ -1,0 +1,9 @@
+{
+  "usingComponents": {
+    "van-image": "../../vant-weapp-dev/dist/image/index",
+    "van-row": "../../vant-weapp-dev/dist/row/index",
+    "van-col": "../../vant-weapp-dev/dist/col/index",
+    "van-transition": "../../vant-weapp-dev/dist/transition/index",
+    "van-popup": "../../vant-weapp-dev/dist/popup/index"
+  }
+}
