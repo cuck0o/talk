@@ -1,9 +1,11 @@
 {
   "usingComponents": {
-    "van-image": "../../vant-weapp-dev/dist/image/index",
-    "van-row": "../../vant-weapp-dev/dist/row/index",
-    "van-col": "../../vant-weapp-dev/dist/col/index",
-    "van-transition": "../../vant-weapp-dev/dist/transition/index",
-    "van-popup": "../../vant-weapp-dev/dist/popup/index"
+    "van-image": "../../lib/dist/image/index",
+    "van-row": "../../lib/dist/row/index",
+    "van-col": "../../lib/dist/col/index",
+    "van-transition": "../../lib/dist/transition/index",
+    "van-popup": "../../lib/dist/popup/index",
+    "van-radio": "../../lib/dist/radio/index",
+    "van-radio-group": "../../lib/dist/radio-group/index"
   }
 }

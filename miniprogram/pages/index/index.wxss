@@ -4,13 +4,11 @@ page {
 }
 
 .top {
+  position: fixed;
   width: 100%;
   height: 30px;
-  position: fixed;
   top: 0;
-  margin: 0;
-  padding: 0;
-  background-image: url(https://7869-xianyuinfo-byqz9-1301827009.tcb.qcloud.la/topbar1.png?sign=8fd9b6ea09bcd726043d19642961a133&t=1609563819);
+  background-image: url(https://7869-xianyuinfo-byqz9-1301827009.tcb.qcloud.la/topbar.png?sign=cf2a6c29894ba5c0e57c7d506d03199c&t=1609741993);
   background-repeat: repeat-x;
   background-position: center;
   background-size: 50px 30px;
@@ -40,40 +38,37 @@ page {
   position: relative;
 }
 
-.titleCon {
-  width: 100%;
-  text-align: center;
-  margin-top: 10px;
-}
-
 .title {
   width: 290px;
   height: 85px;
+  position: relative;
+  left: 50%;
+  margin-top: 100px;
+  transform: translate(-50%, -50%);
 }
 
-.vsCon {
+.vs-con {
   width: 65%;
   padding: 15px;
-  margin: 50px auto;
+  margin: 0px auto;
   text-align: center;
   color: #ffffff;
-  /* font-weight: bold; */
   font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
   vertical-align: middle;
 }
 
-.vs {
+.vs-con text {
   color: black;
 }
 
-.zheng {
+.vs-con .zhengfang {
   width: 45%;
   height: 100%;
   float: left;
   background-color: brown;
 }
 
-.fan {
+.vs-con .fanfang {
   width: 45%;
   height: 100%;
   float: right;
@@ -87,16 +82,48 @@ page {
   bottom: 25%;
 }
 
-.zhengfang {
+.talk .zhengfang {
   width: 129px;
   height: 141px;
   float: left;
 }
 
-.fanfang {
+.talk .fanfang {
   width: 129px;
   height: 141px;
   float: right;
+  transform: rotateY(180deg);
+}
+
+.animat-audiobox-left {
+  position: relative;
+  width: 100%;
+  right: 46rpx;
+  top: 24rpx;
+}
+
+.animat-audiobox-right {
+  position: relative;
+  width: 100%;
+  right: -95rpx;
+  top: 6rpx;
+}
+
+.animat-audiobox-left image {
+  width: 36rpx;
+  height: 36rpx;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.animat-audiobox-right image {
+  width: 36rpx;
+  height: 36rpx;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  transform: rotateY(180deg);
 }
 
 .user {
@@ -111,19 +138,47 @@ page {
   width: 60px;
   height: 60px;
   position: absolute;
-  left: 80px;
+  left: 40px;
+  top: 0px;
+}
+
+.bad {
+  width: 60px;
+  height: 60px;
+  position: absolute;
+  left: -60px;
   top: -10px;
 }
 
-.popup {
-  border-radius: 10px;
+.good {
+  width: 60px;
+  height: 60px;
+  position: absolute;
+  left: -5px;
+  top: -30px;
+}
+
+.record image {
+  width: 60px;
+  height: 60px;
+}
+
+.bad image {
+  width: 60px;
+  height: 60px;
+}
+
+.good image {
+  width: 60px;
+  height: 60px;
 }
 
 .record-popup {
-  width: 100%;
-  width: 100%;
-  background-image: url(https://7869-xianyuinfo-byqz9-1301827009.tcb.qcloud.la/0106085542d7af0000019ae95328e0.jpg%401280w_1l_2o_100sh.jpg?sign=188c1a1eedd0f0dd02de6488bc63b327&t=1609591402);
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: 100% 100%;
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.record-popup text {
+  text-align: center;
+  display: block;
 }
