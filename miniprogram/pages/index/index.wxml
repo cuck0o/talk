@@ -13,11 +13,13 @@
 				</view>
 				<!-- 播放区域 -->
 				<van-row custom-class="talk">
+					<!-- 播放按钮 -->
+					<image wx:if="{{!isPlaying}}" src="../../images/play.png" class="playBtn" bindtap="onPlay"></image>
 					<van-col offset="2" span="10">
 						<image src="../../images/p0.png" class="zhengfang"></image>
 						<view class="animat-audiobox-left" bindtap="onPlay" data-id="A">
-							<image src="../../images/voiceAni03.png" class="{{curplay=='A'? 'hide':'show'}}"></image>
-							<view class="{{curplay=='A'? 'show':'hide'}}">
+							<image src="../../images/voiceAni03.png" class="{{play=='A' ? 'hide':'show'}}"></image>
+							<view class="{{play=='A' ? 'show' : 'hide'}}">
 								<image wx:if="{{playing==1}}" src="../../images/voiceAni01.png"></image>
 								<image wx:if="{{playing==2}}" src="../../images/voiceAni02.png"></image>
 								<image wx:if="{{playing==3}}" src="../../images/voiceAni03.png"></image>
@@ -27,8 +29,8 @@
 					<van-col span="10">
 						<image src="../../images/p0.png" class="fanfang"></image>
 						<view class="animat-audiobox-right" bindtap="onPlay" data-id="B">
-							<image src="../../images/voiceAni03.png" class="{{curplay=='A'? 'hide':'show'}}"></image>
-							<view class="{{curplay=='A'? 'show':'hide'}}">
+							<image src="../../images/voiceAni03.png" class="{{play=='B' ? 'hide':'show'}}"></image>
+							<view class="{{play=='B' ? 'show' : 'hide'}}">
 								<image wx:if="{{playing==1}}" src="../../images/voiceAni01.png"></image>
 								<image wx:if="{{playing==2}}" src="../../images/voiceAni02.png"></image>
 								<image wx:if="{{playing==3}}" src="../../images/voiceAni03.png"></image>

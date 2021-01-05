@@ -3,6 +3,8 @@ const db = wx.cloud.database({
   env: 'xianyuinfo-byqz9'
 })
 const recorderManager = wx.getRecorderManager();
+const recorderAudioManager = wx.createInnerAudioContext();
+const playAudioManager = wx.createInnerAudioContext();
 const options = {
   duration: 180000,
   sampleRate: 44100,
@@ -14,15 +16,23 @@ const options = {
 
 Page({
   data: {
-    talkListIndex: 0, //当前界面索引
-    talkList: [], //所有辩题配置
     recordPopupShow: false, //是否显示录音弹窗
-    curRecord: "", //当前录音信息
-    tempFilePath: "", //当前录音临时路径
+    tempFilePath: "", //当前录音生成的临时路径
     hasGetSetting: false, //是否获取过授权
     recordTime: "", //已经录音的时间
+    recordTimer: 0, //录音计时器
     recordStay: 'A', //录音时临时持方
-    stay: 'A', //我的持方
+    curAgument: "", //当前播放中的论点
+    talkList: [], //所有辩题配置
+    senceID: 0, //当前展示的场次ID    
+    talkListIndex: 0, //当前展示的场次索引
+    voiceA: [], //正方声音
+    voiceB: [], //反方声音
+    play: "", //正在播放的正方还是反方
+    isPlaying: false, //是否正在播放中
+    playing: 1, //语音播放动画的索引
+    soundAniTimer: 0, //语音播放动画的计时器
+    myJoin: {}, //我参与的场次
   },
 
   // 获取配置
@@ -34,7 +44,8 @@ Page({
         console.log("登陆成功：", res.result);
         app.globalData.openid = res.result.openid;
         this.setData({
-          talkList: res.result.talkList
+          talkList: res.result.talkList,
+          senceID: res.result.talkList[this.data.talkListIndex].id,
         })
         this.onGetUserDB();
       },
@@ -47,21 +58,35 @@ Page({
   // 获取用户数据
   onGetUserDB: function () {
     var that = this;
-    db.collection('user-db').where({
-      "_openid": app.globalData.openid
-    }).get({
-      success: function (res) {
-        if (res.data.length > 0) {
-          console.log("获取用户数据成功：", res.data[0]);
-          that.onGetTalkDB();
-        } else {
-          that.onCreateUserDB();
+    if (!app.globalData.userObj) {
+      db.collection('user-db').where({
+        "_openid": app.globalData.openid
+      }).get({
+        success: function (res) {
+          if (res.data.length > 0) {
+            app.globalData.userObj = res.data[0];
+            that.data.myJoin = res.data[0].join.find(x => x.id === that.data.senceID);
+            if (that.data.myJoin == undefined) {
+              that.data.myJoin = {
+                id: Number(that.data.senceID),
+                stay: "",
+                voiceAListerIndex: 0,
+                voiceBListerIndex: 0,
+              }
+            }
+            console.log("获取用户数据成功：", app.globalData.userObj, that.data.myJoin);
+            that.onGetTalkDB();
+          } else {
+            that.onCreateUserDB();
+          }
+        },
+        fail: function (err) {
+          console.log(err);
         }
-      },
-      fail: function (err) {
-        console.log(err);
-      }
-    })
+      })
+    } else {
+
+    }
   },
 
   // 创建用户数据
@@ -70,18 +95,19 @@ Page({
     var that = this;
     var data = {
       value: 0,
-      status: 0,
-      voice: [],
-      lastSence: {
+      join: [{
         id: Number(this.data.talkList[0].id),
-        stay: ""
-      }
+        stay: "",
+        voiceAListerIndex: 0,
+        voiceBListerIndex: 0,
+      }],
     }
     db.collection('user-db').add({
       data: data,
       success: function (res) {
-        console.log("创建用户数据成功:", res);
         app.globalData.userObj = data;
+        that.data.myJoin = data.join[0];
+        console.log("创建用户数据成功：", app.globalData.userObj, that.data.myJoin);
         that.onGetTalkDB();
       },
       fail: function (err) {
@@ -102,7 +128,7 @@ Page({
           that.data.talkList[that.data.talkListIndex].zhengfang = res.data[0].zhengfang;
           that.data.talkList[that.data.talkListIndex].fanfang = res.data[0].fanfang;
           that.setData({
-            talkList: that.data.talkList
+            talkList: that.data.talkList,
           })
           that.onGetVoiceDB();
         } else {
@@ -142,19 +168,54 @@ Page({
 
   // 获取声音数据
   onGetVoiceDB() {
-
+    var that = this;
+    var a = this.data.voiceA;
+    var b = this.data.voiceB;
+    db.collection('voiceA' + this.data.senceID + '-db').skip(this.data.myJoin.voiceAListerIndex).limit(10).get({
+      success: function (res) {
+        var c = a.concat(res.data);
+        that.setData({
+          voiceA: c
+        });
+        console.log("获取正方声音数据成功：", that.data.voiceA, that.data.myJoin.voiceAListerIndex);
+        db.collection('voiceB' + that.data.senceID + '-db').skip(that.data.myJoin.voiceBListerIndex).limit(10).get({
+          success: function (res) {
+            var c = b.concat(res.data);
+            that.setData({
+              voiceB: c
+            })
+            console.log("获取反方声音数据成功：", that.data.voiceB, that.data.myJoin.voiceBListerIndex);
+          }
+        })
+      }
+    })
   },
 
   // 切换辩论场
   onSwiperChange(e) {
     console.log("切换辩题", e.detail.current);
+    playAudioManager.stop();
+    playAudioManager.offCanplay();
+    clearInterval(this.data.soundAniTimer);
     this.setData({
-      talkListIndex: e.detail.current
+      talkListIndex: e.detail.current,
+      senceID: this.data.talkList[e.detail.current].id,
+      isPlaying: false,
+      play: "",
+      playing: 1,
+      voiceA: [],
+      voiceB: [],
     })
+    this.data.myJoin = app.globalData.userObj.join.find(x => x.id === this.data.senceID);
     this.onGetTalkDB();
   },
 
-  // 切换发言持方
+  // 切换当前场次持方
+  onStayChange() {
+
+  },
+
+  // 切换录音发言持方
   onRecordStayChange(e) {
     this.setData({
       recordStay: e.detail,
@@ -162,28 +223,82 @@ Page({
   },
 
   // 开始播放
-  onPlay(e) {
-    // var that = this;
-    // var id = e.currentTarget.dataset["id"];
-    // var j = 0;
-    // var count = 0;
-    // that.data.timer = setInterval(function () {
-    //   let time = +dataset.time * 2
-    //   if (time > count) {
-    //     j = j % 3;
-    //     j++;
-    //     count++;
-    //     that.setData({
-    //       curplay: id
-    //     })
-    //   } else {
-    //     clearInterval(that.data.timer); //停止帧动画循环  
-    //     that.setData({
-    //       playId: -1,
-    //       playing: 0
-    //     })
-    //   }
-    // }, 500)
+  onPlay() {
+    var that = this;
+    // 播放完成
+    playAudioManager.onEnded(() => {
+
+      // db.collection('user-db').where({
+      //   "_openid": String(app.globalData.openid)
+      // }).update({
+      //   data: {
+      //     // ['join.' + [that.data.senceID]]: app.globalData.userObj
+      //   },
+      //   success: function (res) {
+      //     console.log(res.data)
+      //   }
+      // })
+
+      console.log("播放完成");
+      clearInterval(that.data.soundAniTimer);
+      that.setData({
+        playing: 1
+      })
+      that.onPlayComplete();
+    });
+    // 开始播放
+    playAudioManager.onCanplay(() => {
+      console.log("开始播放");
+      that.setData({
+        isPlaying: true
+      })
+      playAudioManager.play();
+      var count = 1;
+      that.data.soundAniTimer = setInterval(function () {
+        if (count > 3) {
+          count = 1
+        }
+        that.setData({
+          playing: count++
+        })
+      }, 500)
+    })
+    this.onPlayComplete();
+  },
+
+  onPlayComplete() {
+    console.log("当前音频：", this.data.play);
+    if (this.data.play == "A" || this.data.play == "") {
+      this.setData({
+        play: "A"
+      })
+      console.log("index:", this.data.myJoin.voiceAListerIndex);
+      console.log("url:", this.data.voiceA[this.data.myJoin.voiceAListerIndex].url);
+      playAudioManager.src = this.data.voiceA[this.data.myJoin.voiceAListerIndex].url;
+      playAudioManager.loop = false;
+      playAudioManager.obeyMuteSwitch = false;
+      if (this.data.myJoin.voiceAListerIndex < this.data.voiceA.length - 1) {
+        this.data.myJoin.voiceAListerIndex++;
+      } else {
+        this.data.myJoin.voiceAListerIndex = 0;
+      }
+      this.data.play = "B";
+    } else {
+      this.setData({
+        play: "B"
+      })
+      console.log("this.data.myJoin.voiceBListerIndex:", this.data.myJoin.voiceBListerIndex);
+      console.log("url:", this.data.voiceB[this.data.myJoin.voiceBListerIndex].url);
+      playAudioManager.src = this.data.voiceB[this.data.myJoin.voiceBListerIndex].url;
+      playAudioManager.loop = false;
+      playAudioManager.obeyMuteSwitch = false;
+      if (this.data.myJoin.voiceBListerIndex < this.data.voiceB.length - 1) {
+        this.data.myJoin.voiceBListerIndex++;
+      } else {
+        this.data.myJoin.voiceBListerIndex = 0;
+      }
+      this.data.play = "A";
+    }
   },
 
   // 用户登录信息及其授权
@@ -208,16 +323,15 @@ Page({
         }
       })
     }
-    console.log(e.currentTarget.dataset['index']);
     switch (e.currentTarget.dataset['index']) {
       case "record":
         this.showRecordPopup();
         break;
       case "good":
-        console.log(this.data.curRecord);
+        console.log(this.data.curAgument);
         break;
       case "bad":
-        console.log(this.data.curRecord);
+        console.log(this.data.curAgument);
         break;
     }
   },
@@ -234,22 +348,28 @@ Page({
       recordPopupShow: false,
       tempFilePath: "",
     });
+    recorderAudioManager.stop();
   },
 
   startRecord() {
     recorderManager.onStart(() => {
       console.log('recorder start');
+      this.data.recordTimer = setInterval(function () {
+        this.data.recordTime++;
+        console.log(this.data.recordTime);
+      }.bind(this), 1000)
     })
     recorderManager.onPause(() => {
       console.log('recorder pause');
     })
     recorderManager.onStop((res) => {
       console.log('recorder stop', res);
+      clearInterval(this.data.recordTimer);
       this.data.tempFilePath = res.tempFilePath
-      let myaudio = wx.createInnerAudioContext();
-      myaudio.src = res.tempFilePath;
-      myaudio.loop = true;
-      myaudio.play();
+      recorderAudioManager.src = res.tempFilePath;
+      recorderAudioManager.loop = true;
+      recorderAudioManager.obeyMuteSwitch = false;
+      recorderAudioManager.play();
     })
     recorderManager.start(options);
   },
@@ -263,11 +383,8 @@ Page({
       return;
     }
     var that = this;
-    // 检查数据库
-    db.collection('voice-db').where({
-      "_openid": String(app.globalData.openid),
-      "senceID": Number(this.data.talkList[this.data.talkListIndex].id),
-      "RecordStay": String(this.data.recordStay)
+    db.collection('voice' + this.data.recordStay + this.data.senceID + '-db').where({
+      "_openid": String(app.globalData.openid)
     }).get({
       success: function (res) {
         console.log("上传前去重检查：", res);
@@ -294,7 +411,8 @@ Page({
 
   uploadRecord(oldID = "") {
     var that = this;
-    var fileName = 'voice/' + this.data.recordStay + "_" + this.data.talkList[this.data.talkListIndex].id + "_" + app.globalData.openid + ".m4a";
+    var fileName = 'voice/' + this.data.recordStay + "_" + this.data.senceID + "_" + app.globalData.openid + ".m4a";
+    // var fileName = 'voice/test2.m4a';
     wx.cloud.uploadFile({
       cloudPath: fileName, // 上传至云端的路径
       filePath: this.data.tempFilePath, // 小程序临时文件路径
@@ -307,15 +425,14 @@ Page({
             icon: 'success',
             duration: 2000
           })
+          hideRecordPopup();
         } else {
           // 新的录音记录
           var data = {
             url: res.fileID,
-            senceID: this.data.talkList[this.data.talkListIndex].id,
             RecordValue: 0,
-            RecordStay: this.data.recordStay
           }
-          db.collection('voice-db').add({
+          db.collection('voice' + that.data.recordStay + that.data.senceID + '-db').add({
             data: data,
             success: function (res) {
               wx.showToast({
@@ -323,6 +440,7 @@ Page({
                 icon: 'success',
                 duration: 2000
               })
+              hideRecordPopup();
             },
             fail: function (err) {
               wx.showToast({
