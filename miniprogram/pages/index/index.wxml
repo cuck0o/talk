@@ -52,10 +52,10 @@
 	<button wx:if="{{talkListIndex==0}}" hover-class="none" class="record" open-type="getUserInfo" bindgetuserinfo="getUserInfo" data-index="record">
 		<image src="../../images/record.png" />
 	</button>
-	<button wx:if="{{talkListIndex==0}}" hover-class="none" class="bad" open-type="getUserInfo" bindgetuserinfo="getUserInfo" data-index="bad">
+	<button wx:if="{{talkListIndex==0 && isPlaying}}" hover-class="none" class="bad" open-type="getUserInfo" bindgetuserinfo="getUserInfo" data-index="bad">
 		<image src="../../images/bad.png" />
 	</button>
-	<button wx:if="{{talkListIndex==0}}" hover-class="none" class="good" open-type="getUserInfo" bindgetuserinfo="getUserInfo" data-index="good">
+	<button wx:if="{{talkListIndex==0 && isPlaying}}" hover-class="none" class="good" open-type="getUserInfo" bindgetuserinfo="getUserInfo" data-index="good">
 		<image src="../../images/good.png" />
 	</button>
 </view>
@@ -69,7 +69,7 @@
 	</van-radio-group>
 	<text>*发布论点不会修改你的持方，如需改变立场，请在主界面vs区域修改持方</text>
 	<text>录音规则：3分钟限制，禁止辱骂人身攻击</text>
-	<button bindtap="startRecord">开始录音{{recordTime}}</button>
+	<button bindtap="startRecord">开始录音:{{recordTime}}</button>
 	<button bindtap="stopRecord">停止录音</button>
 	<button bindtap="checkRecord">上传录音</button>
 </van-popup>
